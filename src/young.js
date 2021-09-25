@@ -96,10 +96,7 @@ function reactive(render, c, getOTree, setOTree) {
       set(t, k, v, h) {
         Reflect.set(t, k, v)
         var oTree = getOTree()
-        //console.log(t, k, v)
-        
         var nTree = render(rootData, c)
-        //console.log(oTree.children[0].children,nTree.children[0].children)
         setOTree(diff(oTree, nTree))
         return true
       }
