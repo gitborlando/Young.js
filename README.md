@@ -41,6 +41,7 @@ src
 先看一个示例: app.young 
 
 ```jsx
+// props: {msg}
 <div>
   <h1>{`Count: ${count}`}</h1>
   <button onclick={() => count++}>count+1</button>
@@ -67,11 +68,12 @@ app.young 文件编译后的结果:
  */
 const {c: c, genTree: genTree, reactive: reactive} = require("./young");
 
-function App({ }) {
+function App({ /** msg */ }) {
   var render = new Function(
     "data",
     "c",
-    `with (data) {
+    `var nTree
+     with (data) {
       nTree = c({
         tag: "div",
         attr: {},
