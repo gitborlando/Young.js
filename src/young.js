@@ -26,8 +26,10 @@ function createElement(type, props, childrens) {
     props: {
       ...props,
       children: childrens.map(children => {
-        return typeof children === 'object' ? children : createTextFiber(children)
-      })
+        return typeof children === 'object' ?
+          children : /[^\n\s]/.test(children) ?
+            createTextFiber(children) : 'Invalid Text'
+      }).filter(i => i !== 'Invalid Text')
     }
   }
 }
@@ -129,6 +131,41 @@ function makeReactive(data) {
 
 
 /**
+ * 等于 useEffect
+ */
+let effectIndex = null
+function Effect(func, dep) {
+  const oldEffect = currentFCFiber?.lastState?.effects[effectIndex]
+
+  let effect
+  if (oldEffect) {
+    if (dep) {
+      if (dep.length) {
+        effect = isChanged(oldEffect[1], dep) ? [func, dep, 'DO'] : [func, dep, 'SKIP']
+      } else {
+        effect = [func, dep, 'DO']
+      }
+    } else {
+      effect = [func, dep, 'SKIP']
+    }
+  } else {
+    effect = [func, dep, 'DO']
+  }
+
+  currentFCFiber.effects.push(effect)
+  effectIndex++
+}
+
+
+function isChanged(oldDep, newDep) {
+  return !oldDep ||
+    oldDep.length !== newDep.length ||
+    newDep.some((arg, index) => !Object.is(arg, oldDep[index]))
+}
+
+
+
+/**
  * 将初始的, 或改变了的 fiber 提交至 workLoop
  */
 function commitToWorkLoop(dom, props, lastState) {
@@ -208,6 +245,8 @@ function dealWithFiberAndReturnNextToDealFiber(fiber) {
  */
 function dealWithFunctionComponent(fiber) {
   currentFCFiber = fiber
+  effectIndex = 0
+  currentFCFiber.effects = []
 
   // 函数组件的type就是个函数，可以直接执行, 返回 fiber
   const childrenFibers = [fiber.type(fiber.props)]
@@ -366,6 +405,14 @@ function dealWithFiberSRealDom(fiber) {
 
   // 3. 递归操作子 fiber 和兄弟 fiber 
   dealWithFiberSRealDom(fiber.childrenFiber);
+
+
+  if (fiber.effects) {
+    fiber.effects.forEach((effect) => {
+      if (effect[2] === 'DO') effect[0]()
+    })
+  }
+
   dealWithFiberSRealDom(fiber.subSiblingFiber);
 }
 
@@ -409,9 +456,10 @@ function Style(css) {
 
 
 
-export default {
+module.exports = {
   createElement,
   render,
   reactive,
-  Style
+  Style,
+  Effect
 }
