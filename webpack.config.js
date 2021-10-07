@@ -1,18 +1,14 @@
 const path = require('path')
 
 module.exports = {
-  mode: 'development',
-  entry: './src/app.young',
-  module: {
-    rules: [{
-      test: /\.young$/,
-      exclude: /node_modules/,
-      use: [
-        {
-          loader: path.resolve(__dirname, 'src/loader.js'),
-        }
-      ]
-    }]
+  entry: './src/young.js',
+  mode: 'production',
+  output: {
+    library: 'Young',
+    libraryTarget: 'umd',
+    libraryExport: 'default',
+    path: path.join(__dirname, '/dist/'),
+    filename: 'index.js'
   },
   watch: true
 }

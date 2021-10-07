@@ -1,8 +1,0 @@
-<div>
-  <h1>{`Count: ${count}`}</h1>
-  <button onclick={() => count++}>count+1</button>
-</div>
-
-let count = 0
-
-Young(document.querySelector('.root')) 
